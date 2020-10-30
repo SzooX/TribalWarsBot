@@ -19,6 +19,7 @@ namespace TribalWarsBot
         public bool ManageBuilding; //TODO manage by checkbox
         bool managingbuildings = false;
         CheckBox mngBuildings;
+        List<string> queue;
         public Bot(Village village, IWebDriver driver , CheckBox mngbuildings)
         {
             this.mngBuildings = mngbuildings;
@@ -114,7 +115,7 @@ namespace TribalWarsBot
                         if (build.level < mainorder.level)
                         {
 
-                            if (build.nlclay < vill.stone) if (build.nliron < vill.iron) if (build.nlpop < (vill.popCapMax - vill.popCap)) if (build.nlwood < vill.wood)
+                            if (build.nlclay < vill.stone && build.nliron < vill.iron && build.nlpop < (vill.popCapMax - vill.popCap) && build.nlwood < vill.wood)
                                         {
                                             Build(mainorder.buildid, mainorder.level);
                                             return;
@@ -154,7 +155,14 @@ namespace TribalWarsBot
                 driver.FindElement(By.Id(buildid)).FindElement(By.Id(tmpbuildid + "_" + level)).Click();
             }catch ( Exception ex)
             {
-                managingbuildings = false;
+                try
+                {
+                    driver.FindElement(By.Id(buildid)).FindElement(By.Id(tmpbuildid + "_" + (level + 1))).Click();
+                }
+                catch (Exception ex2)
+                {
+                    managingbuildings = false;
+                }
             }
 
             managingbuildings = false; 
