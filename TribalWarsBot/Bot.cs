@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Timers;
@@ -14,18 +15,38 @@ namespace TribalWarsBot
         Village village; // actuall isnpected village
         List<Village> villages; // all player villages
         IWebDriver driver;
+        //Timers
         System.Timers.Timer buildtimer;
+        System.Timers.Timer farmtimer;
+        //Help variables
+        //Overall
+        public List<string> BotOrdersQueue = new List<string>();
+            //Building
+        public bool ManageBuilding;  // is bot allowed to manage buildings
+        bool managingbuildings = false; // is bot managing buildings RN
+        List<string> buildqueue;
+            //Farming
+        public bool FarmingEnabled;
+        public bool farming;
 
-        public bool ManageBuilding; //TODO manage by checkbox
-        bool managingbuildings = false;
-        CheckBox mngBuildings;
-        List<string> queue;
-        public Bot(Village village, IWebDriver driver , CheckBox mngbuildings)
+
+        Form1 mainform;
+
+
+        //TODO Pass list of villages
+        public Bot(Village village, IWebDriver driver, Form1 mainform)
         {
-            this.mngBuildings = mngbuildings;
-            ManageBuilding = mngBuildings.Checked;
+            mainform.ChangeLabel("Gathering info..", Color.Yellow, Form1.MainLabels.BotStatus);
+
+            //Assing variables
+            buildtimer = new System.Timers.Timer();
+            farmtimer = new System.Timers.Timer();
+            this.mainform = mainform;
+            ManageBuilding = mainform.GetCheckBox(Form1.MainCheckBoxes.Build);
             this.driver = driver;
             this.village = village;
+
+            //Navigate to main screen
             if (driver.Url.Contains("overview")) village.UpdateResourcesOverview();
             string actaullurl = driver.Url;
             if (actaullurl.Contains("overview&intro")) { actaullurl = actaullurl.Replace("overview&intro", "main"); }
@@ -33,29 +54,70 @@ namespace TribalWarsBot
             {
                 actaullurl = actaullurl.Replace("overview", "main");
             }
-
             driver.Navigate().GoToUrl(actaullurl);
             village.UpdateResourcesMain();
-            if(ManageBuilding)ManageBuildings(village);//TODO change it
 
 
-            buildtimer = new System.Timers.Timer();
-            buildtimer.Interval = 10000;
+            //Start timer which managing building
+            if (buildtimer.Interval == 100) buildtimer.Interval = 1000;
             buildtimer.Elapsed += BuildCheck;
             buildtimer.AutoReset = true;
             buildtimer.Enabled = true;
 
+            //Start timer which managing farm
+            if (farmtimer.Interval == 100) farmtimer.Interval = 1000;
+            farmtimer.Elapsed += FarmCheck;
+            farmtimer.AutoReset = true;
+            farmtimer.Enabled = true;
+
+            mainform.ChangeLabel("Working!", Color.Green, Form1.MainLabels.BotStatus);
+
+
+        }
+
+        private void FarmCheck(object sender, ElapsedEventArgs e)
+        {
+            FarmingEnabled = mainform.GetCheckBox(Form1.MainCheckBoxes.Build);
+            if (!FarmingEnabled)
+            {
+                if (!ManageBuilding) mainform.ChangeLabel("NO TASK", Color.White, Form1.MainLabels.BotTask);
+            }else
+            if (!managingbuildings && !farming)
+            {
+                Farm(village);
+            }
         }
 
         private void BuildCheck(object sender, ElapsedEventArgs e)
         {
-            ManageBuilding = mngBuildings.Checked;
-            if (!managingbuildings)ManageBuildings(village);
+            ManageBuilding = mainform.GetCheckBox(Form1.MainCheckBoxes.Build);
+            if (!ManageBuilding)
+            {
+                if(!FarmingEnabled) mainform.ChangeLabel("NO TASK", Color.White, Form1.MainLabels.BotTask);
+            }else
+            if (!managingbuildings && !farming)
+            {
+                ManageBuildings(village);
+            }
         }
-
+        void Farm(Village vill)
+        {
+            //TODO farm enemies
+        }
+        //main method to decide what bot should build
         void ManageBuildings(Village vill)
         {
-            if (!ManageBuilding) return;
+            managingbuildings = true;
+            //to delete, temp try for debug 
+            try
+            {
+                mainform.ChangeLabel("Building", Color.Yellow, Form1.MainLabels.BotTask);
+            }
+            catch (Exception ex)
+            {
+            }
+
+            //if (!ManageBuilding) return; unnecessary?
             if (vill != village)
             {
                 //navigate to correct village
@@ -66,14 +128,16 @@ namespace TribalWarsBot
             actuallurl = actuallurl.Substring(0, idx + 1) + "main";
             driver.Navigate().GoToUrl(actuallurl);
             village.UpdateResourcesMain();
-            //
-            try
+            //TODO Add checking when queue will be empty then apply to timer
+            try //catch is happen when theres no buildings in queue
             {
                 if (driver.FindElement(By.Id("build_queue")) != null)
                 {
                     List<IWebElement> queueelements = new List<IWebElement>(driver.FindElement(By.Id("build_queue")).FindElements(By.TagName("tr")));
                     if (queueelements.Count > 3)
                     {
+                        mainform.ChangeLabel("Place in build queue", Color.Black, Form1.MainLabels.Missing);
+                        buildtimer.Interval = 300 * 1000; //TODO rework
                         return; // cuz of no place in queue
                     }
                 }
@@ -81,9 +145,6 @@ namespace TribalWarsBot
             catch(Exception ex)
             {
             }
-            
-
-
             string[] buildorder = StaticVariables.BuildOrder;
             List<order> helplist = new List<order>(); // keeping levels needed to be
 
@@ -112,18 +173,37 @@ namespace TribalWarsBot
                 {
                     if (mainorder.buildid == build.name)
                     {
-                        if (build.level < mainorder.level)
+                        mainform.ChangeLabel(StaticVariables.BuildingIDtoName(build.name), Color.Black, Form1.MainLabels.Bulding);
+                       if (build.level < mainorder.level)
                         {
 
                             if (build.nlclay < vill.stone && build.nliron < vill.iron && build.nlpop < (vill.popCapMax - vill.popCap) && build.nlwood < vill.wood)
                                         {
+                                            
                                             Build(mainorder.buildid, mainorder.level);
+                                            buildtimer.Interval = 10000;
                                             return;
                                         }
                                         else
                                         {
+                                            mainform.ChangeLabel("Resources", Color.OrangeRed, Form1.MainLabels.Missing);
+                                            //Calculate time to avaibilty
+                                            try
+                                            {
+                                                string timetoavastring = driver.FindElement(By.Id(mainorder.buildid)).FindElement(By.ClassName("inactive")).Text;
+                                                int middle = timetoavastring.IndexOf(':');
+                                                timetoavastring = timetoavastring.Substring(middle - 2, 5);
+                                                DateTime timeToAva = DateTime.Parse(timetoavastring);
+                                                TimeSpan time = timeToAva - DateTime.Now;
+                                                buildtimer.Interval = time.TotalSeconds > 300 ? 300 * 1000 : time.TotalMilliseconds;
+                                            }
+                                        
+                                            catch(Exception ex)
+                                            {
+                                                buildtimer.Interval = 10000;
+                                            }
+
                                             managingbuildings = false; // not enough resources
-                                            //calcualte remaining time to resources
                                             return;
                                         }
                         }
@@ -165,8 +245,9 @@ namespace TribalWarsBot
                 }
             }
 
-            managingbuildings = false; 
+            managingbuildings = false;
         }
+
     }
     public class order
     {

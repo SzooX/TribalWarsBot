@@ -60,5 +60,10 @@ namespace TribalWarsBot
 
 
         };
+
+        public static string BuildingIDtoName(string id)
+        {
+            return id.Substring(id.LastIndexOf('_')+1);
+        }
     }
 }
