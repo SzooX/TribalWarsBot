@@ -27,7 +27,9 @@ namespace TribalWarsBot
         List<string> buildqueue;
             //Farming
         public bool FarmingEnabled;
-        public bool farming;
+        public bool farming = false;
+        public List<ListViewItem> FarmTargets;
+        public int actualFarmTarget = 0;
 
 
         Form1 mainform;
@@ -41,6 +43,7 @@ namespace TribalWarsBot
             //Assing variables
             buildtimer = new System.Timers.Timer();
             farmtimer = new System.Timers.Timer();
+            FarmTargets = mainform.farmsettings.GetFarmList();
             this.mainform = mainform;
             ManageBuilding = mainform.GetCheckBox(Form1.MainCheckBoxes.Build);
             this.driver = driver;
@@ -77,7 +80,7 @@ namespace TribalWarsBot
 
         private void FarmCheck(object sender, ElapsedEventArgs e)
         {
-            FarmingEnabled = mainform.GetCheckBox(Form1.MainCheckBoxes.Build);
+            FarmingEnabled = mainform.GetCheckBox(Form1.MainCheckBoxes.Farm);
             if (!FarmingEnabled)
             {
                 if (!ManageBuilding) mainform.ChangeLabel("NO TASK", Color.White, Form1.MainLabels.BotTask);
@@ -85,6 +88,10 @@ namespace TribalWarsBot
             if (!managingbuildings && !farming)
             {
                 Farm(village);
+            }
+            else
+            {
+                farmtimer.Interval = 1000;
             }
         }
 
@@ -99,11 +106,58 @@ namespace TribalWarsBot
             {
                 ManageBuildings(village);
             }
+            else
+            {
+                buildtimer.Interval = 1000;
+            }
         }
+
         void Farm(Village vill)
         {
-            //TODO farm enemies
+            farming = true;
+            mainform.ChangeLabel("Farming", Color.Yellow, Form1.MainLabels.BotTask);
+            if (vill != village)
+            {
+                //navigate to correct village
+            }
+            //Navigate to attack pannel
+            string actuallurl = driver.Url;
+            int idx = actuallurl.IndexOf("screen") + 6;
+            actuallurl = actuallurl.Substring(0, idx + 1) + "place";
+            driver.Navigate().GoToUrl(actuallurl);
+            //
+            string[,] attackgroup = mainform.farmsettings.GetFarmGroups();
+            //check every attack group (to be added)
+            for (int i = 0; i < attackgroup.GetLength(0); i++)
+            {
+                string avaiable = driver.FindElement(By.Id($"units_entry_all_{attackgroup[i, 0]}")).Text;
+                int avaiableAmount = int.Parse(avaiable.Substring(1, avaiable.Length - 2));
+                if (avaiableAmount < int.Parse(attackgroup[i, 1]))
+                {
+                    farmtimer.Interval = 300 * 1000;
+                    farming = false;
+                    return;
+                }   
+                driver.FindElement(By.Id($"unit_input_{attackgroup[i, 0]}")).SendKeys(attackgroup[i, 1]);
+            }
+            try
+            {
+                var target = FarmTargets[actualFarmTarget];
+                driver.FindElement(By.XPath("//*[@id=\"place_target\"]/input")).SendKeys($"{FarmTargets[actualFarmTarget].SubItems[1]}|{FarmTargets[actualFarmTarget].SubItems[2]}");
+                driver.FindElement(By.Id("target_attack")).Click();
+                driver.FindElement(By.Id("troop_confirm_go")).Click();  
+                actualFarmTarget++;
+                if (actualFarmTarget >= FarmTargets.Count) actualFarmTarget = 0;
+            }
+            catch(Exception ex)
+            {
+
+            }
+
+            farming = false;
         }
+
+        public int ideksik;
         //main method to decide what bot should build
         void ManageBuildings(Village vill)
         {
@@ -124,7 +178,7 @@ namespace TribalWarsBot
             }
             //Check if queue is not full
             string actuallurl = driver.Url;
-            int idx = actuallurl.LastIndexOf('=');
+            int idx = actuallurl.IndexOf("screen") +6 ;
             actuallurl = actuallurl.Substring(0, idx + 1) + "main";
             driver.Navigate().GoToUrl(actuallurl);
             village.UpdateResourcesMain();
@@ -218,9 +272,9 @@ namespace TribalWarsBot
         {
             //getting build url
             string actuallurl = driver.Url;
-            int idx = actuallurl.LastIndexOf('=');
+            int idx = actuallurl.IndexOf("screen") + 6;
             actuallurl = actuallurl.Substring(0, idx + 1) + "main";
-           
+
             //getting right id for button
             string tmpbuildid = buildid;
             int idxbuildfirst = buildid.IndexOf('_');

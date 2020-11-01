@@ -29,9 +29,15 @@ namespace TribalWarsBot
         }
 
         //Public methods
-        public ListView GetFarmList()
+        public List<ListViewItem> GetFarmList()
         {
-            return FarmList;
+            List<ListViewItem> returnlist = new List<ListViewItem>();
+            var x = FarmList.Items;
+            for (int i = 0; i < x.Count; i++)
+            {
+                returnlist.Add(x[i]);
+            }
+            return returnlist;
         }
         public string[,] GetFarmGroups()
         {

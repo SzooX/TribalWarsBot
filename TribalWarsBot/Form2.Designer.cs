@@ -181,6 +181,7 @@
             this.PikemanBox.Name = "PikemanBox";
             this.PikemanBox.Size = new System.Drawing.Size(60, 27);
             this.PikemanBox.TabIndex = 8;
+            this.PikemanBox.Text = "5";
             // 
             // SwordmanBox
             // 
@@ -188,6 +189,7 @@
             this.SwordmanBox.Name = "SwordmanBox";
             this.SwordmanBox.Size = new System.Drawing.Size(60, 27);
             this.SwordmanBox.TabIndex = 8;
+            this.SwordmanBox.Text = "5";
             // 
             // ErrorLabel
             // 
