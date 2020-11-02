@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BuildOrders>
+	<BuildOrder name="ExampleBuildOrder">
+		<order value="0">main_buildrow_statue</order>
+</BuildOrder>
+</BuildOrders>

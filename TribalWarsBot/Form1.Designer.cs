@@ -67,7 +67,6 @@
             this.usernamebox.Name = "usernamebox";
             this.usernamebox.Size = new System.Drawing.Size(125, 27);
             this.usernamebox.TabIndex = 2;
-            this.usernamebox.Text = "CrazyBot";
             // 
             // passwordbox
             // 
@@ -75,7 +74,6 @@
             this.passwordbox.Name = "passwordbox";
             this.passwordbox.Size = new System.Drawing.Size(125, 27);
             this.passwordbox.TabIndex = 3;
-            this.passwordbox.Text = "Ranking123";
             // 
             // autologin
             // 
@@ -114,7 +112,6 @@
             this.WorldNumberBox.Name = "WorldNumberBox";
             this.WorldNumberBox.Size = new System.Drawing.Size(125, 27);
             this.WorldNumberBox.TabIndex = 6;
-            this.WorldNumberBox.Text = "157";
             // 
             // label3
             // 
