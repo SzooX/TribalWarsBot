@@ -101,5 +101,9 @@ namespace TribalWarsBot
             s.SelectedItems.Clear();
         }
 
+        private void Form2_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
