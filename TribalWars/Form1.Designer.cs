@@ -157,6 +157,7 @@
             this.passwordbox.Name = "passwordbox";
             this.passwordbox.Size = new System.Drawing.Size(100, 22);
             this.passwordbox.TabIndex = 4;
+            this.passwordbox.Text = "Crazy123";
             // 
             // loginbox
             // 
@@ -164,6 +165,7 @@
             this.loginbox.Name = "loginbox";
             this.loginbox.Size = new System.Drawing.Size(100, 22);
             this.loginbox.TabIndex = 3;
+            this.loginbox.Text = "CrazyUser001";
             // 
             // label2
             // 
@@ -189,7 +191,7 @@
             this.panelbox.Name = "panelbox";
             this.panelbox.Size = new System.Drawing.Size(145, 22);
             this.panelbox.TabIndex = 0;
-            this.panelbox.Text = "plemiona.pl";
+            this.panelbox.Text = "TribalWars.net";
             // 
             // wwwtab
             // 

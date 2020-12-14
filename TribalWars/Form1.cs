@@ -29,10 +29,10 @@ namespace TribalWars
             //Create browser
             CefSettings settings = new CefSettings();
             Cef.Initialize(settings);
-            CefWebBrowser = CreateNewChromeBrowser("plemiona.pl", false);
+            CefWebBrowser = CreateNewChromeBrowser("TribalWars.net", false);
             CefWebBrowser.Parent = WWWtabnew;
         }
-        
+
         //Chromium events
         private void Contextmenu_NewTabRequest(string url)
         {
@@ -47,7 +47,7 @@ namespace TribalWars
                 CreateNewChromeBrowser(url).Parent = newtb;
                 maintabcontrol.TabPages.Insert(maintabcontrol.TabPages.IndexOf(Villagestab), newtb);
                 maintabcontrol.SelectTab(maintabcontrol.TabPages.IndexOf(newtb));
-              
+
             };
             this.Invoke(methodInvokerDelegate);
         }
@@ -69,7 +69,7 @@ namespace TribalWars
             this.Invoke(inovokerdelegate);
         }
 
-        public ChromiumWebBrowser CreateNewChromeBrowser(string url , bool TitleEvent = true)
+        public ChromiumWebBrowser CreateNewChromeBrowser(string url, bool TitleEvent = true)
         {
             ChromiumWebBrowser newbrowser = new ChromiumWebBrowser(url);
             newbrowser.Dock = DockStyle.Fill;
@@ -81,7 +81,7 @@ namespace TribalWars
             newbrowser.LifeSpanHandler = lifespander;
             //Assign events
             contextmenu.NewTabRequest += Contextmenu_NewTabRequest;
-            if(TitleEvent)newbrowser.TitleChanged += BrowserTitleChanged;
+            if (TitleEvent) newbrowser.TitleChanged += BrowserTitleChanged;
             return newbrowser;
         }
         public Form1()
@@ -109,7 +109,7 @@ namespace TribalWars
             #region villagelist and their context menu
             for (int i = 3; i < 21; i++)
             {
-                villageslist.Columns[i].ImageIndex = i-3;
+                villageslist.Columns[i].ImageIndex = i - 3;
             }
             ctmenu.ImageList = ContextMenuImgs;
             //villageslist.ContextMenuStrip = ctmenu;
@@ -155,10 +155,10 @@ namespace TribalWars
             {
                 var tabControl = sender as TabControl;
                 var tabs = tabControl.TabPages;
-                TabPage pg  = tabs.Cast<TabPage>()
+                TabPage pg = tabs.Cast<TabPage>()
                         .Where((t, i) => tabControl.GetTabRect(i).Contains(e.Location))
                         .First();
-                if (pg.Tag != null)if (pg.Tag.ToString().ToLower() == "closeable") tabs.Remove(pg);
+                if (pg.Tag != null) if (pg.Tag.ToString().ToLower() == "closeable") tabs.Remove(pg);
             }
         }
 
@@ -169,7 +169,7 @@ namespace TribalWars
         }
         private void UpdateBotTime(object sender, EventArgs e)
         {
-            bottime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff",  CultureInfo.InvariantCulture);
+            bottime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
         }
         HtmlElement FindByClass(HtmlDocument doc, string tag, string class_)
         {
@@ -235,28 +235,45 @@ namespace TribalWars
             maintabcontrol.SelectedTab = NewTabPage;
 
         }
-        public void LoginPageLoaded(object sender, LoadingStateChangedEventArgs e)
+        public async void LoginPageLoaded(object sender, LoadingStateChangedEventArgs e)
         {
+            CefWebBrowser.LoadingStateChanged -= LoginPageLoaded;
             //TODO Check if user entered all req data
-            //Logging
-            if (wbextended.Document.GetElementById("user") != null)
-            {
-                wbextended.Document.GetElementById("user").SetAttribute("value", loginbox.Text);
-                wbextended.Document.GetElementById("password").SetAttribute("value", passwordbox.Text);
-                System.Threading.Thread.Sleep(1000);
-                FindByClass(wbextended.Document, "a", "btn-login").InvokeMember("click");
-            }
-            //Choosing world
-            List<HtmlElement> activeworlds = FindManyByClass(wbextended.Document, "a", "world-select");
-            foreach (var item in activeworlds)
-            {
-                if (item.GetAttribute("href").Contains(worldbox.Text))
+            var script = "(function(){  var field = document.getElementById(\"user\"); if(field){return true}else return field; })();";
+            var response = await CefWebBrowser.EvaluateScriptAsync(script);
+            if (response.Result != null) if ((bool)response.Result)
                 {
-                    item.InvokeMember("click");
-                    break;
+                    tryagain:
+                    script = $@"(function(){{
+                    document.getElementById(""user"").value = ""{loginbox.Text}"";
+                    document.getElementById(""password"").value = ""{passwordbox.Text}"";
+                    document.getElementsByClassName(""btn-login"")[0].click();
+                }})();";
+                    response = await CefWebBrowser.EvaluateScriptAsync(script);
+                    script = $@" document.getElementsByClassName(""world-select"").length > 0";
+                    response = await CefWebBrowser.EvaluateScriptAsync(script);
+                    if (response.Result != null) if ((bool)response.Result)
+                    {
+                            script = $@"(function(){{
+                    var worlds = document.getElementsByClassName(""world-select"");
+                            for (i = 0; i < worlds.length; i++)
+                            {{
+                                if (worlds[i].getAttribute(""href"").includes(""{worldbox.Text}""))
+                                      {{
+                                    window.location.href = worlds[i].getAttribute(""href"");
+                                }}
+                        }}
+                }})();";
+                            response = await CefWebBrowser.EvaluateScriptAsync(script);
                 }
+                else
+                {
+                            System.Threading.Thread.Sleep(1000);
+                            goto tryagain;
+                }
+
             }
-            wbextended.DocumentCompleted -= LoginPageLoaded_old;
+            return;
         }
         public void LoginPageLoaded_old(object sender, EventArgs e)
         {
@@ -279,10 +296,15 @@ namespace TribalWars
                 }
             }
             wbextended.DocumentCompleted -= LoginPageLoaded_old;
-        }
+        } //old method, delete when will be unecessary
         private void botstartbtt_Click(object sender, EventArgs e)
         {
-            CefWebBrowser.Load(panelbox.Text);
+            if(CefWebBrowser.Address != panelbox.Text)CefWebBrowser.Load(panelbox.Text);
+            else
+            {
+                LoginPageLoaded(CefWebBrowser, new LoadingStateChangedEventArgs(null, false, false , false));
+                return;
+            }
             CefWebBrowser.LoadingStateChanged += LoginPageLoaded;
             //wbextended.Navigate(panelbox.Text);
             //wbextended.DocumentCompleted += LoginPageLoaded_old;  OLD
@@ -330,11 +352,13 @@ namespace TribalWars
         }
         
         //Add villages
-        private void addcitybutt_Click(object sender, EventArgs e)
+        private async void addcitybutt_Click(object sender, EventArgs e)
         {
-            //User is on right page
-            if (wbextended.Document.GetElementById("villages") != null)
+            var script = @"document.getElementById(""villages"") != null";
+            var response = await CefWebBrowser.EvaluateScriptAsync(script);
+            if(response.Result != null)if ((bool)response.Result)
             {
+                return;
                 HtmlElement villageshtml = wbextended.Document.GetElementById("villages");
                 foreach (HtmlElement item in villageshtml.GetElementsByTagName("tr"))
                 {
@@ -342,34 +366,36 @@ namespace TribalWars
                     var matches = Villages.Where(p => p.Name == nejm);
                     if (matches.ToList().Count == 0)
                     {
-                        Villages.Add(new Village()
-                        {
-                            Name = nejm,
-                            Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", "")),
-                            Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText),
-                            Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText),
-                            Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText),
-                            Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText),
-                            Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText), // upgrade_building b_church << you know what to do
-                            Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
-                            Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
-                            Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText),
-                            Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText),
-                            Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText),
-                            Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText),
-                            Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText),
-                            Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText),
-                            Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText),
-                            Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText),
-                            Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText),
-                            Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText),
-                            Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText),
-                            Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", ""),
-                            resources = new Resources(),
-                            units = new Units(),
-                            //App vars
-                            Active = false
-                        });
+                        VillageSettings apppSettings = new VillageSettings();
+                            apppSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
+                            Villages.Add(new Village()
+                            {
+                                Name = nejm,
+                                Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", "")),
+                                Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText),
+                                Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText),
+                                Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText),
+                                Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText),
+                                Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText), // upgrade_building b_church << you know what to do
+                                Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
+                                Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
+                                Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText),
+                                Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText),
+                                Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText),
+                                Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText),
+                                Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText),
+                                Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText),
+                                Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText),
+                                Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText),
+                                Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText),
+                                Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText),
+                                Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText),
+                                villageSettings = apppSettings,
+                                resources = new Resources(),
+                                units = new Units(),
+                                //App vars
+                                //Active = false
+                            }); ;
                     }
                     else // so this village arleday existed
                     {
@@ -393,17 +419,34 @@ namespace TribalWars
                         Villages[existingvillageidx].Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText);
                         Villages[existingvillageidx].Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText);
                         Villages[existingvillageidx].Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText);
-                        Villages[existingvillageidx].Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
+                        Villages[existingvillageidx].villageSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
                     }
                 }
                 UpdateVillageList(Villages);
             }
-            else// bad page
+            else if(CefWebBrowser.Address.Contains("village") && CefWebBrowser.Address.Contains("overview"))
+            {
+                //MessageBox.Show("You are not on overview screen. Bot will add only one village."); production thing
+                GatherVillages();
+            }
+            else
             {
                 MessageBox.Show("Couldnt find any villages. Make sure WWW screen is opened at overview tab, and inside \"buildings\" tab is selected");
             }
-           
         }
+        public async void GatherVillages()
+        {
+            VillageWorker vw = new VillageWorker();
+            List<Village> villgs = await vw.GatherVillageData(new string[] { CefWebBrowser.Address });
+            Villages = villgs;
+            UpdateVillageList(Villages);
+        }
+        public async Task<Village> GatherVillageData(string url)
+        {
+
+            return null;
+        }
+
         //Update villages detailed stats
         private void Updatecitybutt_Click(object sender, EventArgs e)
         {
@@ -444,7 +487,8 @@ namespace TribalWars
                 var lvi = new ListViewItem(row);
                 villageslist.Items.Add(lvi);
                 lvi.UseItemStyleForSubItems = false;
-                if(wioski[0].Active)lvi.SubItems[0].BackColor = Color.Green;
+                if(wioski[0].villageSettings.Active)lvi.SubItems[0].BackColor = Color.Green;  
+                    else lvi.SubItems[0].BackColor = Color.Yellow;
             }
             villagedatelabel.Text = DateTime.Now.ToString();
         }
@@ -479,6 +523,7 @@ namespace TribalWars
         private void WorkerReadDetailCities(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
+            
             for (int i = 1; i < Villages.Count; i++)
             {
                 try

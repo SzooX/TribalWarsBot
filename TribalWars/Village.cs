@@ -9,7 +9,7 @@ namespace TribalWars
     public class Village
     {
         //App vars
-        public bool Active { get; set; }
+        
 
         //TribalWars vars
         public string Name { get; set; }
@@ -32,9 +32,14 @@ namespace TribalWars
         public int Storage { get; set; }
         public int Hide { get; set; }
         public int Wall { get; set; }
-        public string Link { get; set; }
-        public Resources resources { get; set; }
         public Units units { get; set; }
+        public Resources resources { get; set; }
+        public VillageSettings villageSettings { get; set; }
+    }
+    public class VillageSettings
+    {
+        public bool Active { get; set; } = false;
+        public string Link { get; set; } = "";
     }
     public class Resources
     {
