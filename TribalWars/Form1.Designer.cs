@@ -43,8 +43,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.panelbox = new System.Windows.Forms.TextBox();
             this.wwwtab = new System.Windows.Forms.TabPage();
-            this.wbextended = new ExtendedWebBrowser();
             this.maintabcontrol = new System.Windows.Forms.TabControl();
+            this.WWWtabnew = new System.Windows.Forms.TabPage();
             this.Villagestab = new System.Windows.Forms.TabPage();
             this.Updatecitybutt = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
@@ -76,14 +76,13 @@
             this.villagedatelabel = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.addcitybutt = new System.Windows.Forms.Button();
-            this.WWWtabnew = new System.Windows.Forms.TabPage();
             this.MainTabImages = new System.Windows.Forms.ImageList(this.components);
             this.label5 = new System.Windows.Forms.Label();
             this.bottime = new System.Windows.Forms.Label();
             this.ContextMenuImgs = new System.Windows.Forms.ImageList(this.components);
+            this.buildtest = new System.Windows.Forms.Button();
             noc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
-            this.wwwtab.SuspendLayout();
             this.maintabcontrol.SuspendLayout();
             this.Villagestab.SuspendLayout();
             this.SuspendLayout();
@@ -195,7 +194,6 @@
             // 
             // wwwtab
             // 
-            this.wwwtab.Controls.Add(this.wbextended);
             this.wwwtab.ImageIndex = 0;
             this.wwwtab.Location = new System.Drawing.Point(4, 25);
             this.wwwtab.Name = "wwwtab";
@@ -204,15 +202,6 @@
             this.wwwtab.TabIndex = 1;
             this.wwwtab.Text = "WWW";
             this.wwwtab.UseVisualStyleBackColor = true;
-            // 
-            // wbextended
-            // 
-            this.wbextended.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.wbextended.Location = new System.Drawing.Point(3, 3);
-            this.wbextended.MinimumSize = new System.Drawing.Size(20, 20);
-            this.wbextended.Name = "wbextended";
-            this.wbextended.Size = new System.Drawing.Size(1471, 697);
-            this.wbextended.TabIndex = 0;
             // 
             // maintabcontrol
             // 
@@ -226,8 +215,21 @@
             this.maintabcontrol.Size = new System.Drawing.Size(1485, 732);
             this.maintabcontrol.TabIndex = 0;
             // 
+            // WWWtabnew
+            // 
+            this.WWWtabnew.ImageIndex = 0;
+            this.WWWtabnew.Location = new System.Drawing.Point(4, 25);
+            this.WWWtabnew.Name = "WWWtabnew";
+            this.WWWtabnew.Padding = new System.Windows.Forms.Padding(3);
+            this.WWWtabnew.Size = new System.Drawing.Size(1477, 703);
+            this.WWWtabnew.TabIndex = 3;
+            this.WWWtabnew.Text = "WWW";
+            this.WWWtabnew.UseVisualStyleBackColor = true;
+            this.WWWtabnew.Click += new System.EventHandler(this.WWWtabnew_Click);
+            // 
             // Villagestab
             // 
+            this.Villagestab.Controls.Add(this.buildtest);
             this.Villagestab.Controls.Add(this.Updatecitybutt);
             this.Villagestab.Controls.Add(this.label7);
             this.Villagestab.Controls.Add(this.Buildintervalbox);
@@ -292,6 +294,7 @@
             this.Buildingcheck.TabIndex = 5;
             this.Buildingcheck.Text = "Enable building";
             this.Buildingcheck.UseVisualStyleBackColor = true;
+            this.Buildingcheck.CheckedChanged += new System.EventHandler(this.Buildingcheck_CheckedChanged);
             // 
             // villageslist
             // 
@@ -461,17 +464,6 @@
             this.addcitybutt.UseVisualStyleBackColor = true;
             this.addcitybutt.Click += new System.EventHandler(this.addcitybutt_Click);
             // 
-            // WWWtabnew
-            // 
-            this.WWWtabnew.ImageIndex = 0;
-            this.WWWtabnew.Location = new System.Drawing.Point(4, 25);
-            this.WWWtabnew.Name = "WWWtabnew";
-            this.WWWtabnew.Padding = new System.Windows.Forms.Padding(3);
-            this.WWWtabnew.Size = new System.Drawing.Size(1477, 703);
-            this.WWWtabnew.TabIndex = 3;
-            this.WWWtabnew.Text = "WWW";
-            this.WWWtabnew.UseVisualStyleBackColor = true;
-            // 
             // MainTabImages
             // 
             this.MainTabImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("MainTabImages.ImageStream")));
@@ -507,6 +499,16 @@
         "pg");
             this.ContextMenuImgs.Images.SetKeyName(3, "150_check_no_delete_error_remove-512.png");
             // 
+            // buildtest
+            // 
+            this.buildtest.Location = new System.Drawing.Point(273, 35);
+            this.buildtest.Name = "buildtest";
+            this.buildtest.Size = new System.Drawing.Size(147, 23);
+            this.buildtest.TabIndex = 10;
+            this.buildtest.Text = "test building";
+            this.buildtest.UseVisualStyleBackColor = true;
+            this.buildtest.Click += new System.EventHandler(this.buildtest_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -523,7 +525,6 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.wwwtab.ResumeLayout(false);
             this.maintabcontrol.ResumeLayout(false);
             this.Villagestab.ResumeLayout(false);
             this.Villagestab.PerformLayout();
@@ -583,6 +584,7 @@
         private System.Windows.Forms.ImageList ContextMenuImgs;
         private System.Windows.Forms.Button Updatecitybutt;
         private System.Windows.Forms.TabPage WWWtabnew;
+        private System.Windows.Forms.Button buildtest;
     }
 }
 

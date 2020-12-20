@@ -11,11 +11,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CefSharp;
 using CefSharp.WinForms;
+using TribalWars.Workers;
 
 namespace TribalWars
 {
     public partial class Form1 : Form
     {
+        //Timers
+        Timer BuildTimer = new Timer();
+
         //Workers
         public WebBrowser WorkerBrowser1;
         //
@@ -147,6 +151,8 @@ namespace TribalWars
             bottime.Tick += new EventHandler(UpdateBotTime);
             bottime.Interval = 1;
             bottime.Start();
+            //Build timer
+            BuildTimer.Tick += new EventHandler(BuildVillages);
         }
 
         private void Maintabcontrol_MouseDown(object sender, MouseEventArgs e)
@@ -164,8 +170,30 @@ namespace TribalWars
 
         private void VillagesContextMenuClick(object sender, EventArgs e)
         {
-            MessageBox.Show(villageslist.FocusedItem.SubItems[1].Text);
-            //TODO
+            //active / deactive 
+            ToolStripItem itm = sender as ToolStripItem;
+            var match = Villages.Find((v) => v.Name == villageslist.FocusedItem.SubItems[1].Text);
+            if (itm.Text == "Set active")
+            {
+                if (match.BuildQueue != null) { if (match.buildSettings.AnyOption() == true) match.villageSettings.Active = true; 
+                else MessageBox.Show("Cannot set active village without queue or buildsettings");
+                }
+                else MessageBox.Show("Cannot set active village without queue or buildsettings");
+            }
+            else if(itm.Text == "Disable")
+            {
+                match.villageSettings.Active = false;
+            }
+            else if (itm.Text == "Configure")
+            {
+                VillageForm vf = new VillageForm(this, match);
+                vf.Show();
+            }
+            else if (itm.Text == "Remove")
+            {
+                Villages.Remove(match);
+            }
+            UpdateVillageList(Villages);
         }
         private void UpdateBotTime(object sender, EventArgs e)
         {
@@ -210,7 +238,7 @@ namespace TribalWars
         }
         private void InitializeBrowserEvents(ExtendedWebBrowser SourceBrowser)
         {
-            SourceBrowser.NewWindow2 += new EventHandler<NewWindow2EventArgs>(SourceBrowser_NewWindow2);
+            //SourceBrowser.NewWindow2 += new EventHandler<NewWindow2EventArgs>(SourceBrowser_NewWindow2);
         }
         //Creating new webrowser window inside app
         void SourceBrowser_NewWindow2(object sender, NewWindow2EventArgs e)
@@ -368,10 +396,8 @@ namespace TribalWars
                     {
                         VillageSettings apppSettings = new VillageSettings();
                             apppSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
-                            Villages.Add(new Village()
+                            Buildings bld = new Buildings()
                             {
-                                Name = nejm,
-                                Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", "")),
                                 Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText),
                                 Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText),
                                 Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText),
@@ -390,35 +416,41 @@ namespace TribalWars
                                 Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText),
                                 Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText),
                                 Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText),
+                            };
+                            Villages.Add(new Village()
+                            {
+                                Name = nejm,
+                                Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", "")),
+                                buildings = bld,
                                 villageSettings = apppSettings,
                                 resources = new Resources(),
                                 units = new Units(),
                                 //App vars
                                 //Active = false
-                            }); ;
+                            });
                     }
                     else // so this village arleday existed
                     {
                         int existingvillageidx = Villages.IndexOf(matches.ToArray()[0]);
                         Villages[existingvillageidx].Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", ""));
-                        Villages[existingvillageidx].Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText);
-                        Villages[existingvillageidx].Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText);
-                        Villages[existingvillageidx].Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText);
-                        Villages[existingvillageidx].Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText);
-                        Villages[existingvillageidx].Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText); // upgrade_building b_church << you know what to do
-                        Villages[existingvillageidx].Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
-                        Villages[existingvillageidx].Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
-                        Villages[existingvillageidx].Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText);
-                        Villages[existingvillageidx].Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText);
-                        Villages[existingvillageidx].Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText);
-                        Villages[existingvillageidx].Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText);
-                        Villages[existingvillageidx].Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText);
-                        Villages[existingvillageidx].Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText);
-                        Villages[existingvillageidx].Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText);
-                        Villages[existingvillageidx].Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText);
-                        Villages[existingvillageidx].Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText);
-                        Villages[existingvillageidx].Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText);
-                        Villages[existingvillageidx].Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText);
+                        Villages[existingvillageidx].buildings.Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText);
+                        Villages[existingvillageidx].buildings.Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText);
+                        Villages[existingvillageidx].buildings.Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText);
+                        Villages[existingvillageidx].buildings.Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText);
+                        Villages[existingvillageidx].buildings.Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText); // upgrade_building b_church << you know what to do
+                        Villages[existingvillageidx].buildings.Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
+                        Villages[existingvillageidx].buildings.Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
+                        Villages[existingvillageidx].buildings.Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText);
+                        Villages[existingvillageidx].buildings.Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText);
+                        Villages[existingvillageidx].buildings.Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText);
+                        Villages[existingvillageidx].buildings.Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText);
+                        Villages[existingvillageidx].buildings.Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText);
+                        Villages[existingvillageidx].buildings.Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText);
+                        Villages[existingvillageidx].buildings.Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText);
+                        Villages[existingvillageidx].buildings.Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText);
+                        Villages[existingvillageidx].buildings.Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText);
+                        Villages[existingvillageidx].buildings.Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText);
+                        Villages[existingvillageidx].buildings.Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText);
                         Villages[existingvillageidx].villageSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
                     }
                 }
@@ -434,6 +466,7 @@ namespace TribalWars
                 MessageBox.Show("Couldnt find any villages. Make sure WWW screen is opened at overview tab, and inside \"buildings\" tab is selected");
             }
         }
+        //New village scraping methods
         public async void GatherVillages()
         {
             VillageWorker vw = new VillageWorker();
@@ -450,10 +483,10 @@ namespace TribalWars
         //Update villages detailed stats
         private void Updatecitybutt_Click(object sender, EventArgs e)
         {
-            if (CityReader.IsBusy != true)
-            {
-                CityReader.RunWorkerAsync();
-            }
+            //if (CityReader.IsBusy != true)
+            //{
+            //    CityReader.RunWorkerAsync();
+            //}
         }
         //Update village list at Villages tab.
         public void UpdateVillageList(List<Village> wioski)
@@ -465,24 +498,24 @@ namespace TribalWars
                         i.ToString(),
                         wioski[i].Name,
                         wioski[i].Points.ToString(),
-                        wioski[i].Main.ToString(),
-                        wioski[i].Barracks.ToString(),
-                        wioski[i].Stable.ToString(),
-                        wioski[i].Garage.ToString(),
-                        wioski[i].Church.ToString(),
-                        wioski[i].Watchtower.ToString(),
-                        wioski[i].Snob.ToString(),
-                        wioski[i].Smith.ToString(),
-                        wioski[i].Place.ToString(),
-                        wioski[i].Statue.ToString(),
-                        wioski[i].Market.ToString(),
-                        wioski[i].Wood.ToString(),
-                        wioski[i].Stone.ToString(),
-                        wioski[i].Iron.ToString(),
-                        wioski[i].Farm.ToString(),
-                        wioski[i].Storage.ToString(),
-                        wioski[i].Hide.ToString(),
-                        wioski[i].Wall.ToString()
+                        wioski[i].buildings.Main.ToString(),
+                        wioski[i].buildings.Barracks.ToString(),
+                        wioski[i].buildings.Stable.ToString(),
+                        wioski[i].buildings.Garage.ToString(),
+                        wioski[i].buildings.Church.ToString(),
+                        wioski[i].buildings.Watchtower.ToString(),
+                        wioski[i].buildings.Snob.ToString(),
+                        wioski[i].buildings.Smith.ToString(),
+                        wioski[i].buildings.Place.ToString(),
+                        wioski[i].buildings.Statue.ToString(),
+                        wioski[i].buildings.Market.ToString(),
+                        wioski[i].buildings.Wood.ToString(),
+                        wioski[i].buildings.Stone.ToString(),
+                        wioski[i].buildings.Iron.ToString(),
+                        wioski[i].buildings.Farm.ToString(),
+                        wioski[i].buildings.Storage.ToString(),
+                        wioski[i].buildings.Hide.ToString(),
+                        wioski[i].buildings.Wall.ToString()
                     };
                 var lvi = new ListViewItem(row);
                 villageslist.Items.Add(lvi);
@@ -582,9 +615,43 @@ namespace TribalWars
         }
 
 
+
         #endregion
 
+        //???
+        private void WWWtabnew_Click(object sender, EventArgs e)
+        {
 
+        }
+
+        private void buildtest_Click(object sender, EventArgs e)
+        {
+            BuildVillages(null,null);
+        }
+        private async void BuildVillages(object sender, EventArgs e)
+        {
+            Task.Run(BuildVillages);
+        }
+        private async Task BuildVillages()
+        {
+            BuildWorker BW = new BuildWorker();
+            List<Village> villgs = await BW.BuildVillages(Villages);
+            Villages = villgs;
+            UpdateVillageList(Villages); // is good here?
+        }
+        private void Buildingcheck_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Buildingcheck.Checked)
+            {
+                BuildTimer.Interval = int.Parse(Buildintervalbox.Text)*1000;
+                BuildTimer.Start();
+            }
+            else
+            {
+                BuildTimer.Stop();
+            }
+
+        }
     }
 
 }
