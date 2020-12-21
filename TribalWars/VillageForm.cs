@@ -37,6 +37,7 @@ namespace TribalWars
             if (village.BuildQueue == null) village.BuildQueue = new List<string>();
             if (village.buildSettings == null) village.buildSettings = new BuildSettings();
             UpdateQueueView(village.BuildQueue);
+            UpdatePresets();
         }
         public void UpdateQueueView(List<string> Queue)
         {
@@ -154,6 +155,65 @@ namespace TribalWars
         private void label4_Click(object sender, EventArgs e) //r,m
         {
 
+        }
+
+        private void PresetChooser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(PresetChooser.Text == "Add preset")
+            {
+                PresetForm pf = new PresetForm(mform, this);
+                pf.Show();
+                PresetChooser.Text = "";
+            }
+            else
+            {
+                BuildPreset bp = mform.BuildPresets.Find(x => x.Name == PresetChooser.Text);
+                //get building levels
+                List<string[]> blevels = new List<string[]>();
+                var model = village.buildings.GetType();
+                var properties = model.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                for (int i = 0; i < Buildingslist.Items.Count; i++)
+                {
+                    blevels.Add(new string[] { properties[i].Name, properties[i].GetValue(village.buildings, null).ToString() } );
+                }
+                bp.Queue.Reverse();
+                for (int i = bp.Queue.Count - 1; i >-1 ; i--)
+                {
+                    for (int l = 0; l < blevels.Count; l++)
+                    {
+                        if(blevels[l][0].ToLower() ==
+                            bp.Queue[i].ToLower())
+                        {
+                            if(int.Parse(blevels[l][1]) > 0)
+                            {
+                                bp.Queue.RemoveAt(i);
+                                blevels[l][1] = (int.Parse(blevels[l][1]) - 1).ToString();
+                            }
+                            break;
+                           
+                        }
+                    }
+                }
+                bp.Queue.Reverse();
+                village.BuildQueue = bp.Queue;
+                village.buildSettings = bp.buildSettings;
+                Con1box.Checked = bp.buildSettings.BuildRequiments ? true : false;
+                Con2box.Checked = bp.buildSettings.BuildFarmIfLowSpace ? true : false;
+                Con3box.Checked = bp.buildSettings.BuildFarmIfNotEnoughCap ? true : false;
+                Con4box.Checked = bp.buildSettings.BuildStorageForRequiments ? true : false;
+                Con5box.Checked = bp.buildSettings.BuildStorageIfNoSpace ? true : false;
+                Con2percent.Text = bp.buildSettings.LowSpacePercent.ToString();
+                UpdateQueueView(village.BuildQueue);
+            }
+        }
+        public void UpdatePresets()
+        {
+            PresetChooser.Items.Clear();
+            for (int i = 0; i < mform.BuildPresets.Count; i++)
+            {
+                PresetChooser.Items.Add(mform.BuildPresets[i].Name);
+            }
+            PresetChooser.Items.Add("Add preset");
         }
     }
 }

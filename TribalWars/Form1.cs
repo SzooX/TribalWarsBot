@@ -17,6 +17,7 @@ namespace TribalWars
 {
     public partial class Form1 : Form
     {
+
         //Timers
         Timer BuildTimer = new Timer();
 
@@ -28,6 +29,7 @@ namespace TribalWars
         ContextMenuStrip TabContextMenu = new ContextMenuStrip(); // context menu for maintabcontrol . To be added
         //
         ChromiumWebBrowser CefWebBrowser;
+        public List<BuildPreset> BuildPresets = new List<BuildPreset>();
         private void Form1_Load(object sender, EventArgs e)
         {
             //Create browser

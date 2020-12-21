@@ -439,12 +439,12 @@
             // 
             this.PresetChooser.FormattingEnabled = true;
             this.PresetChooser.Items.AddRange(new object[] {
-            "None",
-            "Add"});
+            "Add preset"});
             this.PresetChooser.Location = new System.Drawing.Point(266, 10);
             this.PresetChooser.Name = "PresetChooser";
             this.PresetChooser.Size = new System.Drawing.Size(121, 24);
             this.PresetChooser.TabIndex = 27;
+            this.PresetChooser.SelectedIndexChanged += new System.EventHandler(this.PresetChooser_SelectedIndexChanged);
             // 
             // VillageForm
             // 
