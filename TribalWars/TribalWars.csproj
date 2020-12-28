@@ -65,6 +65,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultBuildPresets.cs" />
+    <Compile Include="FarmForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FarmForm.Designer.cs">
+      <DependentUpon>FarmForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Implementations\CefCustomMenuMain.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -92,6 +99,9 @@
     </Compile>
     <Compile Include="Workers\BuildWorker.cs" />
     <Compile Include="Workers\VillageWorker.cs" />
+    <EmbeddedResource Include="FarmForm.resx">
+      <DependentUpon>FarmForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

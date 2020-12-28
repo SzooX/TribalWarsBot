@@ -16,6 +16,8 @@ namespace TribalWars
         Village village;
         public VillageForm(Form1 mainform , Village village)
         {
+            
+
             mform = mainform;
             InitializeComponent();
             this.village = village;
@@ -38,6 +40,7 @@ namespace TribalWars
             if (village.buildSettings == null) village.buildSettings = new BuildSettings();
             UpdateQueueView(village.BuildQueue);
             UpdatePresets();
+            UpdateBools(village.buildSettings);
         }
         public void UpdateQueueView(List<string> Queue)
         {
@@ -197,12 +200,7 @@ namespace TribalWars
                 bp.Queue.Reverse();
                 village.BuildQueue = bp.Queue;
                 village.buildSettings = bp.buildSettings;
-                Con1box.Checked = bp.buildSettings.BuildRequiments ? true : false;
-                Con2box.Checked = bp.buildSettings.BuildFarmIfLowSpace ? true : false;
-                Con3box.Checked = bp.buildSettings.BuildFarmIfNotEnoughCap ? true : false;
-                Con4box.Checked = bp.buildSettings.BuildStorageForRequiments ? true : false;
-                Con5box.Checked = bp.buildSettings.BuildStorageIfNoSpace ? true : false;
-                Con2percent.Text = bp.buildSettings.LowSpacePercent.ToString();
+                UpdateBools(bp.buildSettings);
                 UpdateQueueView(village.BuildQueue);
             }
         }
@@ -214,6 +212,15 @@ namespace TribalWars
                 PresetChooser.Items.Add(mform.BuildPresets[i].Name);
             }
             PresetChooser.Items.Add("Add preset");
+        }
+        public void UpdateBools(BuildSettings bp)
+        {
+            Con1box.Checked = bp.BuildRequiments ? true : false;
+            Con2box.Checked = bp.BuildFarmIfLowSpace ? true : false;
+            Con3box.Checked = bp.BuildFarmIfNotEnoughCap ? true : false;
+            Con4box.Checked = bp.BuildStorageForRequiments ? true : false;
+            Con5box.Checked = bp.BuildStorageIfNoSpace ? true : false;
+            Con2percent.Text = bp.LowSpacePercent.ToString();
         }
     }
 }

@@ -7,11 +7,13 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 //using System.Threading;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CefSharp;
 using CefSharp.WinForms;
 using TribalWars.Workers;
+using Newtonsoft.Json.Linq;
 
 namespace TribalWars
 {
@@ -26,6 +28,7 @@ namespace TribalWars
         //
         public List<Village> Villages = new List<Village>();
         ContextMenuStrip ctmenu = new ContextMenuStrip(); // context menu for villagelist
+        ContextMenuStrip ctmenufarm = new ContextMenuStrip(); // context menu for villagefarmlist
         ContextMenuStrip TabContextMenu = new ContextMenuStrip(); // context menu for maintabcontrol . To be added
         //
         ChromiumWebBrowser CefWebBrowser;
@@ -146,7 +149,37 @@ namespace TribalWars
             ctmenu.Items.Add(item4);
             #endregion
             //
-            InitializeBrowserEvents(wbextended);
+            //Settuping farmlist
+            #region Farmlist and its context menu
+            ctmenufarm.ImageList = ContextMenuImgs;
+            //villageslist.ContextMenuStrip = ctmenu;
+            item1 = new ToolStripMenuItem();
+            item1.Name = "Set active";
+            item1.Text = "Set active";
+            item1.ImageIndex = 0;
+            item1.Click += FarmListContextMenuClick;
+            item2 = new ToolStripMenuItem();
+            item2.Name = "Disable";
+            item2.Text = "Disable";
+            item2.ImageIndex = 1;
+            item2.Click += FarmListContextMenuClick;
+            item3 = new ToolStripMenuItem();
+            item3.Name = "Configure";
+            item3.Text = "Configure";
+            item3.ImageIndex = 2;
+            item3.Click += FarmListContextMenuClick;
+            item4 = new ToolStripMenuItem();
+            item4.Margin = new Padding(0, 10, 0, 0);
+            item4.Name = "Remove";
+            item4.Text = "Remove";
+            item4.ImageIndex = 3;
+            item4.Click += FarmListContextMenuClick;
+            ctmenufarm.Items.Add(item1);
+            ctmenufarm.Items.Add(item2);
+            ctmenufarm.Items.Add(item3);
+            ctmenufarm.Items.Add(item4);
+            #endregion
+            //
 
             //Bot timer
             Timer bottime = new Timer();
@@ -155,8 +188,10 @@ namespace TribalWars
             bottime.Start();
             //Build timer
             BuildTimer.Tick += new EventHandler(BuildVillages);
+            BuildPresets.Add(DefaultBuildPresets.Eko);
         }
 
+        //maintab click handler
         private void Maintabcontrol_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Middle)
@@ -169,102 +204,11 @@ namespace TribalWars
                 if (pg.Tag != null) if (pg.Tag.ToString().ToLower() == "closeable") tabs.Remove(pg);
             }
         }
-
-        private void VillagesContextMenuClick(object sender, EventArgs e)
-        {
-            //active / deactive 
-            ToolStripItem itm = sender as ToolStripItem;
-            var match = Villages.Find((v) => v.Name == villageslist.FocusedItem.SubItems[1].Text);
-            if (itm.Text == "Set active")
-            {
-                if (match.BuildQueue != null) { if (match.buildSettings.AnyOption() == true) match.villageSettings.Active = true; 
-                else MessageBox.Show("Cannot set active village without queue or buildsettings");
-                }
-                else MessageBox.Show("Cannot set active village without queue or buildsettings");
-            }
-            else if(itm.Text == "Disable")
-            {
-                match.villageSettings.Active = false;
-            }
-            else if (itm.Text == "Configure")
-            {
-                VillageForm vf = new VillageForm(this, match);
-                vf.Show();
-            }
-            else if (itm.Text == "Remove")
-            {
-                Villages.Remove(match);
-            }
-            UpdateVillageList(Villages);
-        }
         private void UpdateBotTime(object sender, EventArgs e)
         {
             bottime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
         }
-        HtmlElement FindByClass(HtmlDocument doc, string tag, string class_)
-        {
-            var links = doc.GetElementsByTagName(tag);
-            foreach (HtmlElement link in links)
-            {
-                if (link.GetAttribute("className") == class_)
-                {
-                    return link;
-                }
-            }
-            return null;
-        }
-        HtmlElement FindByClass(HtmlElement doc, string tag, string class_)
-        {
-            var links = doc.GetElementsByTagName(tag);
-            foreach (HtmlElement link in links)
-            {
-                if (link.GetAttribute("className") == class_)
-                {
-                    return link;
-                }
-            }
-            return null;
-        }
-        List<HtmlElement> FindManyByClass(HtmlDocument doc, string tag, string class_)
-        {
-            List<HtmlElement> elements = new List<HtmlElement>();
-            var links = doc.GetElementsByTagName(tag);
-            foreach (HtmlElement link in links)
-            {
-                if (link.GetAttribute("className") == class_)
-                {
-                    elements.Add(link);
-                }
-            }
-            return elements;
-        }
-        private void InitializeBrowserEvents(ExtendedWebBrowser SourceBrowser)
-        {
-            //SourceBrowser.NewWindow2 += new EventHandler<NewWindow2EventArgs>(SourceBrowser_NewWindow2);
-        }
-        //Creating new webrowser window inside app
-        void SourceBrowser_NewWindow2(object sender, NewWindow2EventArgs e)
-        {
-
-            TabPage NewTabPage = new TabPage()
-            {
-                Text = "Loading..."
-            };
-
-            ExtendedWebBrowser NewTabBrowser = new ExtendedWebBrowser()
-            {
-                Parent = NewTabPage,
-                Dock = DockStyle.Fill,
-                Tag = NewTabPage
-            };
-
-            e.PPDisp = NewTabBrowser.Application;
-            InitializeBrowserEvents(NewTabBrowser);
-
-            maintabcontrol.TabPages.Add(NewTabPage);
-            maintabcontrol.SelectedTab = NewTabPage;
-
-        }
+        //logging
         public async void LoginPageLoaded(object sender, LoadingStateChangedEventArgs e)
         {
             CefWebBrowser.LoadingStateChanged -= LoginPageLoaded;
@@ -305,28 +249,7 @@ namespace TribalWars
             }
             return;
         }
-        public void LoginPageLoaded_old(object sender, EventArgs e)
-        {
-            //TODO Check if user entered all req data
-            //Logging
-            if (wbextended.Document.GetElementById("user") != null) {
-                wbextended.Document.GetElementById("user").SetAttribute("value", loginbox.Text);
-                wbextended.Document.GetElementById("password").SetAttribute("value", passwordbox.Text);
-                System.Threading.Thread.Sleep(1000);
-                FindByClass(wbextended.Document, "a", "btn-login").InvokeMember("click");
-            }
-            //Choosing world
-            List<HtmlElement> activeworlds = FindManyByClass(wbextended.Document, "a", "world-select");
-            foreach (var item in activeworlds)
-            {
-                if (item.GetAttribute("href").Contains(worldbox.Text))
-                {
-                    item.InvokeMember("click");
-                    break;
-                }
-            }
-            wbextended.DocumentCompleted -= LoginPageLoaded_old;
-        } //old method, delete when will be unecessary
+        //starting 
         private void botstartbtt_Click(object sender, EventArgs e)
         {
             if(CefWebBrowser.Address != panelbox.Text)CefWebBrowser.Load(panelbox.Text);
@@ -336,132 +259,56 @@ namespace TribalWars
                 return;
             }
             CefWebBrowser.LoadingStateChanged += LoginPageLoaded;
-            //wbextended.Navigate(panelbox.Text);
-            //wbextended.DocumentCompleted += LoginPageLoaded_old;  OLD
-            //Entering world
-            try
-            {
-                //checkforworlds:
-                //List<IWebElement> activeworlds = new List<IWebElement>(driver.FindElements(By.ClassName("world_button_active")));
-                //if (activeworlds.Count == 0)
-                //{
-                //    goto checkforworlds;
-                //}
-                //bool worldlocated = false;
-                //foreach (IWebElement element in activeworlds)
-                //{
-                //    string worldnumber = element.Text;
-                //    if (-1 < worldnumber.IndexOf(WorldNumberBox.Text))
-                //    {
-                //        worldlocated = true;
-                //        element.Click();
-                //        break;
-                //    }
-                //}
-                //if (!worldlocated)
-                //{
-                //    //throw error
-                //}
-                ////Enabling village
-                ////TODO Find all villages
-                //villagefirst = new Village(driver);
-                //villagefirst.UpdateResources();
-                //bot = new Bot(villagefirst, driver, this);
-                ////Starting timer for update villages
-                //aTimer = new System.Timers.Timer();
-                //aTimer.Interval = 2000;
-                //aTimer.Elapsed += OnTimedEvent;
-                //aTimer.AutoReset = true;
-                //aTimer.Enabled = true;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Problem while entering world" + ex);
-            }
         }
         
         //Add villages
         private async void addcitybutt_Click(object sender, EventArgs e)
         {
-            var script = @"document.getElementById(""villages"") != null";
+            var script = @"document.getElementById(""production_table"") != null";
             var response = await CefWebBrowser.EvaluateScriptAsync(script);
             if(response.Result != null)if ((bool)response.Result)
             {
-                return;
-                HtmlElement villageshtml = wbextended.Document.GetElementById("villages");
-                foreach (HtmlElement item in villageshtml.GetElementsByTagName("tr"))
-                {
-                    string nejm = FindByClass(item, "span", "quickedit-label").InnerHtml.Replace("\\n", "").Trim(); //village name
-                    var matches = Villages.Where(p => p.Name == nejm);
-                    if (matches.ToList().Count == 0)
+                    List<RawVillage> rv = new List<RawVillage>();
+
+                    script = $@"(function(){{
+    var response = {{
+        Villages: []
+    }}
+    var v = [];
+    var trs = document.getElementById(""production_table"").getElementsByTagName(""tbody"")[0].getElementsByTagName(""tr"");
+    for(i = 1; i < trs.length; i++){{
+        v[i-1] =
+        {{
+        Points: trs[i].getElementsByTagName(""td"")[1].innerText,
+        Link: trs[i].getElementsByTagName(""td"")[0].getElementsByTagName(""span"")[0].getElementsByTagName(""span"")[0].getElementsByTagName(""a"")[0].getAttribute(""href"")
+        }}
+    }}
+    response.Villages = v;
+    return JSON.stringify(response);
+}})();";
+                    response = await CefWebBrowser.EvaluateScriptAsync(script);
+                    JObject res = JsonConvert.DeserializeObject<JObject>(response.Result.ToString());
+                    List<JToken> rl = res.Children<JToken>().ToList()[0].Children<JToken>().ToList()[0].Children().ToList();
+                    for (int i = 0; i < rl.Count; i++)
                     {
-                        VillageSettings apppSettings = new VillageSettings();
-                            apppSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
-                            Buildings bld = new Buildings()
-                            {
-                                Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText),
-                                Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText),
-                                Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText),
-                                Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText),
-                                Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText), // upgrade_building b_church << you know what to do
-                                Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
-                                Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText),
-                                Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText),
-                                Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText),
-                                Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText),
-                                Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText),
-                                Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText),
-                                Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText),
-                                Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText),
-                                Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText),
-                                Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText),
-                                Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText),
-                                Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText),
-                            };
-                            Villages.Add(new Village()
-                            {
-                                Name = nejm,
-                                Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", "")),
-                                buildings = bld,
-                                villageSettings = apppSettings,
-                                resources = new Resources(),
-                                units = new Units(),
-                                //App vars
-                                //Active = false
-                            });
+                        string s = JsonConvert.SerializeObject(rl[i]);
+                        rv.Add(JsonConvert.DeserializeObject<RawVillage>(s));
                     }
-                    else // so this village arleday existed
+                    List<string> adrs = new List<string>();
+                    for (int i = 0; i < rv.Count; i++)
                     {
-                        int existingvillageidx = Villages.IndexOf(matches.ToArray()[0]);
-                        Villages[existingvillageidx].Points = int.Parse(item.GetElementsByTagName("td")[3].InnerHtml.Replace("<span class=\"grey\">.</span>", ""));
-                        Villages[existingvillageidx].buildings.Main = int.Parse(FindByClass(item, "td", "upgrade_building b_main").InnerText);
-                        Villages[existingvillageidx].buildings.Barracks = int.Parse(FindByClass(item, "td", "upgrade_building b_barracks").InnerText);
-                        Villages[existingvillageidx].buildings.Stable = int.Parse(FindByClass(item, "td", "upgrade_building b_stable").InnerText);
-                        Villages[existingvillageidx].buildings.Garage = int.Parse(FindByClass(item, "td", "upgrade_building b_garage").InnerText);
-                        Villages[existingvillageidx].buildings.Church = int.Parse(FindByClass(item, "td", "upgrade_building b_church_f").InnerText); // upgrade_building b_church << you know what to do
-                        Villages[existingvillageidx].buildings.Watchtower = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
-                        Villages[existingvillageidx].buildings.Snob = int.Parse(FindByClass(item, "td", "upgrade_building b_watchtower").InnerText);
-                        Villages[existingvillageidx].buildings.Smith = int.Parse(FindByClass(item, "td", "upgrade_building b_smith").InnerText);
-                        Villages[existingvillageidx].buildings.Place = int.Parse(FindByClass(item, "td", "upgrade_building b_place").InnerText);
-                        Villages[existingvillageidx].buildings.Statue = int.Parse(FindByClass(item, "td", "upgrade_building b_statue").InnerText);
-                        Villages[existingvillageidx].buildings.Market = int.Parse(FindByClass(item, "td", "upgrade_building b_market").InnerText);
-                        Villages[existingvillageidx].buildings.Wood = int.Parse(FindByClass(item, "td", "upgrade_building b_wood").InnerText);
-                        Villages[existingvillageidx].buildings.Stone = int.Parse(FindByClass(item, "td", "upgrade_building b_stone").InnerText);
-                        Villages[existingvillageidx].buildings.Iron = int.Parse(FindByClass(item, "td", "upgrade_building b_iron").InnerText);
-                        Villages[existingvillageidx].buildings.Farm = int.Parse(FindByClass(item, "td", "upgrade_building b_farm").InnerText);
-                        Villages[existingvillageidx].buildings.Storage = int.Parse(FindByClass(item, "td", "upgrade_building b_storage").InnerText);
-                        Villages[existingvillageidx].buildings.Hide = int.Parse(FindByClass(item, "td", "upgrade_building b_hide").InnerText);
-                        Villages[existingvillageidx].buildings.Wall = int.Parse(FindByClass(item, "td", "upgrade_building b_wall").InnerText);
-                        Villages[existingvillageidx].villageSettings.Link = FindByClass(item, "span", "quickedit-content").GetElementsByTagName("a")[0].GetAttribute("href").Replace("&screen=main", "");
+                        adrs.Add(rv[i].Link);
                     }
-                }
-                UpdateVillageList(Villages);
+                    GatherVillages(adrs.ToArray());
             }
             else if(CefWebBrowser.Address.Contains("village") && CefWebBrowser.Address.Contains("overview"))
             {
                 //MessageBox.Show("You are not on overview screen. Bot will add only one village."); production thing
-                GatherVillages();
+                script = $@"(function(){{
+    return document.getElementsByClassName(""nowrap tooltip-delayed"")[0].getAttribute(""href"")
+}})();";
+                response = await CefWebBrowser.EvaluateScriptAsync(script);
+                GatherVillages(new string[] { response.Result.ToString() });
             }
             else
             {
@@ -469,17 +316,13 @@ namespace TribalWars
             }
         }
         //New village scraping methods
-        public async void GatherVillages()
+        public async void GatherVillages(string[] adresses)
         {
+            string mainurl = CefWebBrowser.Address.Substring(0, CefWebBrowser.Address.IndexOf('/', 11));
             VillageWorker vw = new VillageWorker();
-            List<Village> villgs = await vw.GatherVillageData(new string[] { CefWebBrowser.Address });
+            List<Village> villgs = await vw.GatherVillageData( mainurl,adresses);
             Villages = villgs;
             UpdateVillageList(Villages);
-        }
-        public async Task<Village> GatherVillageData(string url)
-        {
-
-            return null;
         }
 
         //Update villages detailed stats
@@ -493,6 +336,7 @@ namespace TribalWars
         //Update village list at Villages tab.
         public void UpdateVillageList(List<Village> wioski)
         {
+            //village list building
             villageslist.Items.Clear();
             for (int i = 0; i < wioski.Count; i++)
             {
@@ -526,6 +370,41 @@ namespace TribalWars
                     else lvi.SubItems[0].BackColor = Color.Yellow;
             }
             villagedatelabel.Text = DateTime.Now.ToString();
+            //village list farm
+            VillagesFarmList.Items.Clear();
+            for (int i = 0; i < wioski.Count; i++)
+            {
+                if (wioski[i].farming == null)
+                {
+                    wioski[i].farming = new Farming();
+                    wioski[i].farming.FarmTargets = new List<TargetVillage>();
+                    wioski[i].farming.UnitPackages = new List<FarmPackage>();
+                }
+                int activeones = 0;
+                foreach (var item in wioski[i].farming.FarmTargets)
+                {
+                    if (item.Active) activeones++;
+                }
+                string UnitPackages = "";
+                foreach (var item in wioski[i].farming.UnitPackages)
+                {
+                    UnitPackages += item.Name + " ";
+                }
+                var row = new string[] {
+                        i.ToString(),
+                        wioski[i].Name,
+                        wioski[i].farming.FarmTargets.Count.ToString(),
+                        activeones.ToString(),
+                        UnitPackages
+                    };
+                var lvi = new ListViewItem(row);
+                VillagesFarmList.Items.Add(lvi);
+                lvi.UseItemStyleForSubItems = false;
+                if (wioski[0].farming.Active) lvi.SubItems[0].BackColor = Color.Green;
+                else lvi.SubItems[0].BackColor = Color.Yellow;
+
+            }
+            
         }
 
         //Appering context menu after right click on an item on villagelist (list view)
@@ -551,85 +430,92 @@ namespace TribalWars
                 }
             }
         }
-
-
-        #region Reading villages details worker methods
-        //Reading villages worker tasks
-        private void WorkerReadDetailCities(object sender, DoWorkEventArgs e)
+        private void VillagesContextMenuClick(object sender, EventArgs e)
         {
-            BackgroundWorker worker = sender as BackgroundWorker;
-            
-            for (int i = 1; i < Villages.Count; i++)
+            //active / deactive 
+            ToolStripItem itm = sender as ToolStripItem;
+            var match = Villages.Find((v) => v.Name == villageslist.FocusedItem.SubItems[1].Text);
+            if (itm.Text == "Set active")
             {
-                try
+                if (match.BuildQueue != null)
                 {
-                    // This is how you force your logic to be called on the main
-                    // application thread
-                    var test = WebBrowserReadyState.Uninitialized;
-                    
-                    while (true)
+                    if (match.buildSettings.AnyOption() == true) match.villageSettings.Active = true;
+                    else MessageBox.Show("Cannot set active village without queue or buildsettings");
+                }
+                else MessageBox.Show("Cannot set active village without queue or buildsettings");
+            }
+            else if (itm.Text == "Disable")
+            {
+                match.villageSettings.Active = false;
+            }
+            else if (itm.Text == "Configure")
+            {
+                VillageForm vf = new VillageForm(this, match);
+                vf.Show();
+            }
+            else if (itm.Text == "Remove")
+            {
+                Villages.Remove(match);
+            }
+            UpdateVillageList(Villages);
+        }
+        //Appering context menu after right click on an item on farmlist (list view)
+        private void farmlist_MouseDown(object sender, MouseEventArgs e)
+        {
+            bool match = false;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                foreach (ListViewItem item in VillagesFarmList.Items)
+                {
+                    if (item.Bounds.Contains(new Point(e.X, e.Y)))
                     {
-                        WorkerBrowser1.Invoke((Action)(() => { test = WorkerBrowser1.ReadyState; }));
-                        if(test == WebBrowserReadyState.Complete)
-                        {
-                            MessageBox.Show(test.ToString());
-                            break;
-                        }
-                    }
-                    worker.ReportProgress(i+1);
-                    Villages[i].resources.Wood = int.Parse(WorkerBrowser1.Document.GetElementById("wood").InnerText);
-                    Villages[i].resources.Stone = int.Parse(WorkerBrowser1.Document.GetElementById("stone").InnerText);
-                    Villages[i].resources.Iron = int.Parse(WorkerBrowser1.Document.GetElementById("iron").InnerText);
-                    if (worker.CancellationPending == true) // not implemented
-                    {
-                        e.Cancel = true;
+                        //MenuItem[] mi = new MenuItem[] { new MenuItem("Hello"), new MenuItem("World"), new MenuItem(item.Name) };
+                        //villageslist.ContextMenu = new ContextMenu(mi);
+                        match = true;
+
+                        //dlt
+                        VillagesFarmList.FocusedItem = item;
+                        ctmenufarm.Show(VillagesFarmList, new Point(e.X, e.Y));
                         break;
                     }
-                }catch(Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
                 }
-              
             }
         }
-        // Not implemented progress event
-        private void WorkerReadDetailCitiesProgress(object sender, ProgressChangedEventArgs e)
+        private void FarmListContextMenuClick(object sender, EventArgs e)
         {
-            wbextended.Navigate("plemiona link");
-            MessageBox.Show("One city readed");
+            ToolStripItem itm = sender as ToolStripItem;
+            Village match = null;
+            match = Villages.Find((v) => v.Name == VillagesFarmList.FocusedItem.SubItems[0].Text); 
+            if (itm.Text == "Set active")
+            {
+                
+                if (match.farming.FarmTargets.Count > 0 && match.farming.UnitPackages.Count > 0)
+                {
+                    MessageBox.Show("Cannot set active village without fart targets or farm packages");
+                }
+                else MessageBox.Show("Cannot set active village without fart targets or farm packages");
+            }
+            else if (itm.Text == "Disable")
+            {
+                match.farming.Active = false;
+            }
+            else if (itm.Text == "Configure")
+            {
+                MessageBox.Show("not yet boi");
+            }
+            else if (itm.Text == "Remove")
+            {
+                Villages.Remove(match);
+            }
+            UpdateVillageList(Villages);
         }
 
-        //Finished reading cities details
-        private void WorkerReadDetailCitiesFinished(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Cancelled == true)
-            {
-                //to implement
-            }
-            else if (e.Error != null)
-            {
-                //to implement
-            }
-            else
-            {
-                //to implement
-            }
-        }
-
-
-
-        #endregion
-
-        //???
-        private void WWWtabnew_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        //Building
         private void buildtest_Click(object sender, EventArgs e)
         {
             BuildVillages(null,null);
-        }
+        } // test method
         private async void BuildVillages(object sender, EventArgs e)
         {
             Task.Run(BuildVillages);
@@ -654,6 +540,12 @@ namespace TribalWars
             }
 
         }
-    }
 
+        //Farming
+    }
+    public class RawVillage
+    {
+        public string Points { get; set; }
+        public string Link { get; set; }
+    }
 }

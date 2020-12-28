@@ -11,18 +11,24 @@ namespace TribalWars
 {
     public class VillageWorker
     {
+        string mainurl;
         public VillageWorker()
         {
         }
-        public  async Task<List<Village>> GatherVillageData(string[] VillageUrls)
+        public  async Task<List<Village>> GatherVillageData(string murl , string[] VillageUrls)
         {
+            mainurl = murl;
             List<Village> returnlist = new List<Village>();
-            returnlist.Add(await GetVillageData(VillageUrls[0])); // for here
+            // for here
+            for (int i = 0; i < VillageUrls.Length; i++)
+            {
+                returnlist.Add(await GetVillageData(VillageUrls[i]));
+            }
             return returnlist;
         }
         async Task<Village> GetVillageData(string url)
         {
-            ChromiumWebBrowser wb = new ChromiumWebBrowser(url);
+            ChromiumWebBrowser wb = new ChromiumWebBrowser(mainurl + url);
             System.Threading.Thread.Sleep(1000);
             JavascriptResponse jsresponse = await wb.EvaluateScriptAsPromiseAsync(JSfunctions.ScrapVillage);
             dynamic res = jsresponse.Result;

@@ -30,6 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ColumnHeader noc;
+            System.Windows.Forms.ColumnHeader columnHeader1;
+            System.Windows.Forms.ColumnHeader columnHeader22;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.CityReader = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -42,10 +44,11 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.panelbox = new System.Windows.Forms.TextBox();
-            this.wwwtab = new System.Windows.Forms.TabPage();
+            this.MapTab = new System.Windows.Forms.TabPage();
             this.maintabcontrol = new System.Windows.Forms.TabControl();
             this.WWWtabnew = new System.Windows.Forms.TabPage();
             this.Villagestab = new System.Windows.Forms.TabPage();
+            this.buildtest = new System.Windows.Forms.Button();
             this.Updatecitybutt = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.Buildintervalbox = new System.Windows.Forms.TextBox();
@@ -76,26 +79,42 @@
             this.villagedatelabel = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.addcitybutt = new System.Windows.Forms.Button();
+            this.FarmerTab = new System.Windows.Forms.TabPage();
+            this.TestBoxFarmer = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.FarmTimeBox = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.FarmingBox = new System.Windows.Forms.CheckBox();
+            this.VillagesFarmList = new System.Windows.Forms.ListView();
+            this.Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.MainTabImages = new System.Windows.Forms.ImageList(this.components);
             this.label5 = new System.Windows.Forms.Label();
             this.bottime = new System.Windows.Forms.Label();
             this.ContextMenuImgs = new System.Windows.Forms.ImageList(this.components);
-            this.buildtest = new System.Windows.Forms.Button();
             noc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            columnHeader22 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.maintabcontrol.SuspendLayout();
             this.Villagestab.SuspendLayout();
+            this.FarmerTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // noc
             // 
             noc.Text = "NO.";
             // 
-            // CityReader
+            // columnHeader1
             // 
-            this.CityReader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.WorkerReadDetailCities);
-            this.CityReader.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.WorkerReadDetailCitiesProgress);
-            this.CityReader.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.WorkerReadDetailCitiesFinished);
+            columnHeader1.Text = "NO.";
+            // 
+            // columnHeader22
+            // 
+            columnHeader22.Text = "Packages";
+            columnHeader22.Width = 158;
             // 
             // groupBox1
             // 
@@ -192,22 +211,24 @@
             this.panelbox.TabIndex = 0;
             this.panelbox.Text = "TribalWars.net";
             // 
-            // wwwtab
+            // MapTab
             // 
-            this.wwwtab.ImageIndex = 0;
-            this.wwwtab.Location = new System.Drawing.Point(4, 25);
-            this.wwwtab.Name = "wwwtab";
-            this.wwwtab.Padding = new System.Windows.Forms.Padding(3);
-            this.wwwtab.Size = new System.Drawing.Size(1477, 703);
-            this.wwwtab.TabIndex = 1;
-            this.wwwtab.Text = "WWW";
-            this.wwwtab.UseVisualStyleBackColor = true;
+            this.MapTab.ImageIndex = 2;
+            this.MapTab.Location = new System.Drawing.Point(4, 25);
+            this.MapTab.Name = "MapTab";
+            this.MapTab.Padding = new System.Windows.Forms.Padding(3);
+            this.MapTab.Size = new System.Drawing.Size(1477, 703);
+            this.MapTab.TabIndex = 1;
+            this.MapTab.Text = "Map";
+            this.MapTab.UseVisualStyleBackColor = true;
             // 
             // maintabcontrol
             // 
             this.maintabcontrol.Controls.Add(this.WWWtabnew);
             this.maintabcontrol.Controls.Add(this.Villagestab);
-            this.maintabcontrol.Controls.Add(this.wwwtab);
+            this.maintabcontrol.Controls.Add(this.FarmerTab);
+            this.maintabcontrol.Controls.Add(this.tabPage1);
+            this.maintabcontrol.Controls.Add(this.MapTab);
             this.maintabcontrol.ImageList = this.MainTabImages;
             this.maintabcontrol.Location = new System.Drawing.Point(12, 77);
             this.maintabcontrol.Name = "maintabcontrol";
@@ -225,7 +246,6 @@
             this.WWWtabnew.TabIndex = 3;
             this.WWWtabnew.Text = "WWW";
             this.WWWtabnew.UseVisualStyleBackColor = true;
-            this.WWWtabnew.Click += new System.EventHandler(this.WWWtabnew_Click);
             // 
             // Villagestab
             // 
@@ -246,6 +266,16 @@
             this.Villagestab.TabIndex = 2;
             this.Villagestab.Text = "Villages";
             this.Villagestab.UseVisualStyleBackColor = true;
+            // 
+            // buildtest
+            // 
+            this.buildtest.Location = new System.Drawing.Point(273, 35);
+            this.buildtest.Name = "buildtest";
+            this.buildtest.Size = new System.Drawing.Size(147, 23);
+            this.buildtest.TabIndex = 10;
+            this.buildtest.Text = "test building";
+            this.buildtest.UseVisualStyleBackColor = true;
+            this.buildtest.Click += new System.EventHandler(this.buildtest_Click);
             // 
             // Updatecitybutt
             // 
@@ -464,12 +494,119 @@
             this.addcitybutt.UseVisualStyleBackColor = true;
             this.addcitybutt.Click += new System.EventHandler(this.addcitybutt_Click);
             // 
+            // FarmerTab
+            // 
+            this.FarmerTab.Controls.Add(this.TestBoxFarmer);
+            this.FarmerTab.Controls.Add(this.label8);
+            this.FarmerTab.Controls.Add(this.FarmTimeBox);
+            this.FarmerTab.Controls.Add(this.label9);
+            this.FarmerTab.Controls.Add(this.FarmingBox);
+            this.FarmerTab.Controls.Add(this.VillagesFarmList);
+            this.FarmerTab.Location = new System.Drawing.Point(4, 25);
+            this.FarmerTab.Name = "FarmerTab";
+            this.FarmerTab.Size = new System.Drawing.Size(1477, 703);
+            this.FarmerTab.TabIndex = 5;
+            this.FarmerTab.Text = "Farmer";
+            this.FarmerTab.UseVisualStyleBackColor = true;
+            // 
+            // TestBoxFarmer
+            // 
+            this.TestBoxFarmer.Location = new System.Drawing.Point(22, 15);
+            this.TestBoxFarmer.Name = "TestBoxFarmer";
+            this.TestBoxFarmer.Size = new System.Drawing.Size(115, 23);
+            this.TestBoxFarmer.TabIndex = 19;
+            this.TestBoxFarmer.Text = "Test farmer";
+            this.TestBoxFarmer.UseVisualStyleBackColor = true;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Enabled = false;
+            this.label8.Location = new System.Drawing.Point(227, 97);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(40, 17);
+            this.label8.TabIndex = 18;
+            this.label8.Text = "(sec)";
+            // 
+            // FarmTimeBox
+            // 
+            this.FarmTimeBox.Location = new System.Drawing.Point(121, 94);
+            this.FarmTimeBox.Name = "FarmTimeBox";
+            this.FarmTimeBox.Size = new System.Drawing.Size(100, 22);
+            this.FarmTimeBox.TabIndex = 17;
+            this.FarmTimeBox.Text = "60";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Enabled = false;
+            this.label9.Location = new System.Drawing.Point(22, 97);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(90, 17);
+            this.label9.TabIndex = 16;
+            this.label9.Text = "Farm interval";
+            // 
+            // FarmingBox
+            // 
+            this.FarmingBox.AutoSize = true;
+            this.FarmingBox.Location = new System.Drawing.Point(22, 59);
+            this.FarmingBox.Name = "FarmingBox";
+            this.FarmingBox.Size = new System.Drawing.Size(129, 21);
+            this.FarmingBox.TabIndex = 15;
+            this.FarmingBox.Text = "Enable Farming";
+            this.FarmingBox.UseVisualStyleBackColor = true;
+            // 
+            // VillagesFarmList
+            // 
+            this.VillagesFarmList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnHeader1,
+            this.Name,
+            this.columnHeader2,
+            this.columnHeader3,
+            columnHeader22});
+            this.VillagesFarmList.GridLines = true;
+            this.VillagesFarmList.HideSelection = false;
+            this.VillagesFarmList.Location = new System.Drawing.Point(22, 197);
+            this.VillagesFarmList.Name = "VillagesFarmList";
+            this.VillagesFarmList.Size = new System.Drawing.Size(1433, 490);
+            this.VillagesFarmList.SmallImageList = this.VillagesListImgs;
+            this.VillagesFarmList.StateImageList = this.VillagesListImgs;
+            this.VillagesFarmList.TabIndex = 14;
+            this.VillagesFarmList.UseCompatibleStateImageBehavior = false;
+            this.VillagesFarmList.View = System.Windows.Forms.View.Details;
+            this.VillagesFarmList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.farmlist_MouseDown);
+            // 
+            // Name
+            // 
+            this.Name.Text = "Name";
+            this.Name.Width = 124;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "All villages";
+            this.columnHeader2.Width = 79;
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Active Villages";
+            this.columnHeader3.Width = 102;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Size = new System.Drawing.Size(1477, 703);
+            this.tabPage1.TabIndex = 4;
+            this.tabPage1.Text = "Army";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
             // MainTabImages
             // 
             this.MainTabImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("MainTabImages.ImageStream")));
             this.MainTabImages.TransparentColor = System.Drawing.Color.Transparent;
             this.MainTabImages.Images.SetKeyName(0, "fdb01354a7f787c8d3191c8759c7d428.png");
             this.MainTabImages.Images.SetKeyName(1, "Village.png");
+            this.MainTabImages.Images.SetKeyName(2, "watchtower.png");
             // 
             // label5
             // 
@@ -499,16 +636,6 @@
         "pg");
             this.ContextMenuImgs.Images.SetKeyName(3, "150_check_no_delete_error_remove-512.png");
             // 
-            // buildtest
-            // 
-            this.buildtest.Location = new System.Drawing.Point(273, 35);
-            this.buildtest.Name = "buildtest";
-            this.buildtest.Size = new System.Drawing.Size(147, 23);
-            this.buildtest.TabIndex = 10;
-            this.buildtest.Text = "test building";
-            this.buildtest.UseVisualStyleBackColor = true;
-            this.buildtest.Click += new System.EventHandler(this.buildtest_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -520,7 +647,6 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.maintabcontrol);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
             this.Text = "Crazy TribalWars Bot v0.13";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
@@ -528,6 +654,8 @@
             this.maintabcontrol.ResumeLayout(false);
             this.Villagestab.ResumeLayout(false);
             this.Villagestab.PerformLayout();
+            this.FarmerTab.ResumeLayout(false);
+            this.FarmerTab.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -545,7 +673,7 @@
         private System.Windows.Forms.TextBox worldbox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button botstopbtt;
-        private System.Windows.Forms.TabPage wwwtab;
+        private System.Windows.Forms.TabPage MapTab;
         private ExtendedWebBrowser wbextended;
         private System.Windows.Forms.TabControl maintabcontrol;
         private System.Windows.Forms.TabPage Villagestab;
@@ -585,6 +713,17 @@
         private System.Windows.Forms.Button Updatecitybutt;
         private System.Windows.Forms.TabPage WWWtabnew;
         private System.Windows.Forms.Button buildtest;
+        private System.Windows.Forms.TabPage FarmerTab;
+        private System.Windows.Forms.Button TestBoxFarmer;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox FarmTimeBox;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox FarmingBox;
+        private System.Windows.Forms.ListView VillagesFarmList;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.ColumnHeader Name;
     }
 }
 

@@ -16,6 +16,7 @@ namespace TribalWars
         public Units units { get; set; }
         public Resources resources { get; set; }
         public VillageSettings villageSettings { get; set; }
+        public Farming farming { get; set; }
     }
     public class VillageSettings
     {
@@ -79,6 +80,23 @@ namespace TribalWars
         public int Ram { get; set; } = 0;
         public int Catapult { get; set; } = 0;
         public int Snob { get; set; } = 0;
+    }
+    public class Farming
+    {
+        public bool Active { get; set; }
+        public List<FarmPackage> UnitPackages { get; set; }
+        public List<TargetVillage> FarmTargets { get; set; }
+    }
+    public class TargetVillage
+    {
+        public bool Active { get; set; }
+        public string Name { get; set; }
+        public string Cord { get; set; }
+    }
+    public class FarmPackage
+    {
+        public string Name { get; set; }
+        public Units units { get; set; }
     }
 
 }
