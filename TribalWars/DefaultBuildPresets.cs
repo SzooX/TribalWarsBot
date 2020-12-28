@@ -10,7 +10,7 @@ namespace TribalWars
     {
         public static BuildPreset Eko = new BuildPreset()
         {
-            Name = "Eko",
+            Name = "Eco",
             buildSettings = new BuildSettings()
             {
                 BuildFarmIfLowSpace = true,
